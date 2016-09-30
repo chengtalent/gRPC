@@ -70,7 +70,6 @@ func main() {
 
 /////////////////////////////////////////////////////
 
-
 	c2 := pb.NewWhitelistClient(conn)
 	r2, err2 := c2.GetWhitelist(context.Background(), &pb.NoParam{})
 	if err2 != nil {
