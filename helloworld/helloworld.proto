@@ -27,7 +27,6 @@ service Whitelist {
 }
 
 message NoParam {
-	
 }
 
 message IPList {

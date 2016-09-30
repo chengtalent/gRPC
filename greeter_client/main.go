@@ -68,10 +68,13 @@ func main() {
 	}
 	log.Printf("Greeting: %s", r.Message)
 
+/////////////////////////////////////////////////////
+
+
 	c2 := pb.NewWhitelistClient(conn)
 	r2, err2 := c2.GetWhitelist(context.Background(), &pb.NoParam{})
 	if err2 != nil {
 		log.Fatalf("could not GetWhitelist: %v", err2)
 	}
-	log.Printf("GetWhitelist: %s", r2.Message)
+	log.Printf("GetWhitelist: %s", r2.Ip)
 }
