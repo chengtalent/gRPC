@@ -30,5 +30,5 @@ message NoParam {
 }
 
 message IPList {
-	string ip = 1;
+	repeated string ip = 1;
 }

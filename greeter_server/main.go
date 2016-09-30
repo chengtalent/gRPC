@@ -60,7 +60,9 @@ type whitelistServer struct{}
 
 func (s *whitelistServer) GetWhitelist(ctx context.Context, in *pb.NoParam) (*pb.IPList, error) {
 	res := &pb.IPList{}
-	res.Ip = "127.0.0.1"
+	res.Ip = make([]string, 2)
+	res.Ip[0] = "127.0.0.1"
+	res.Ip[1] = "192.168.0.1"
 
 	return res, nil
 }
