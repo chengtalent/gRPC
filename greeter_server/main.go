@@ -37,14 +37,19 @@ import (
 	"log"
 	"net"
 
+	"github.com/op/go-logging"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	ca "google.golang.org/grpc/examples/helloworld/ca"
+	"google.golang.org/grpc/examples/helloworld/crypto"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 )
 
 const (
 	port = ":50051"
 )
+
+var slogger = logging.MustGetLogger("server")
 
 // server is used to implement helloworld.GreeterServer.
 type server struct{}
@@ -54,9 +59,7 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
-
 type whitelistServer struct{}
-
 
 func (s *whitelistServer) GetWhitelist(ctx context.Context, in *pb.NoParam) (*pb.IPList, error) {
 	res := &pb.IPList{}
@@ -76,6 +79,16 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
 	pb.RegisterWhitelistServer(s, &whitelistServer{})
+
+	//////////////////////////////////////////////////
+
+	// Init the crypto layer
+	if err := crypto.Init(); err != nil {
+		slogger.Panicf("Failed initializing the crypto layer [%s]", err)
+	}
+
+	ca.CacheConfiguration()
+	ca.NewCA("Silei", ca.InitializeCommonTables)
 
 	s.Serve(lis)
 }

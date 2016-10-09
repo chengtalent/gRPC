@@ -32,3 +32,7 @@ message NoParam {
 message IPList {
 	repeated string ip = 1;
 }
+
+service CA {
+
+}
