@@ -90,10 +90,16 @@ func main() {
 	ca.CacheConfiguration()
 	ca := ca.NewCA("Silei", ca.InitializeCommonTables)
 
-	const Pub = `-----BEGIN PUBLIC KEY-----
-MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEs0Hsfojry7g3TLBzID4JjjIhGJF2GMJ5
-acT38++yWsju1UKRWUxFrfqJXjRYz4yf5dduk6pbPWGOUdfdAOAPJQ==
------END PUBLIC KEY-----`
+//	const Pub = `-----BEGIN PUBLIC KEY-----
+//MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEs0Hsfojry7g3TLBzID4JjjIhGJF2GMJ5
+//acT38++yWsju1UKRWUxFrfqJXjRYz4yf5dduk6pbPWGOUdfdAOAPJQ==
+//-----END PUBLIC KEY-----`
+
+
+	const Pub = `-----BEGIN ECDSA PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
+1j7hyO4lqc+b1rUwsCW9ED5P94ysslg6e75MT6UCKYLqRYlIr3bOqfT51w==
+-----END ECDSA PUBLIC KEY-----`
 
 	ca.IssueCertificate([]byte(Pub), "test")
 

@@ -285,10 +285,10 @@ func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error
 			caLogger.Panic(err)
 		}
 
-		pubkey := pub.(ecdsa.PublicKey)
+		pubkey := pub.(*ecdsa.PublicKey)
 
 
-		raw = ca.createCACertificate(name, &(pubkey))
+		raw = ca.createCACertificate(name, (pubkey))
 	}
 
 	cert, err := x509.ParseCertificate(raw)
