@@ -88,7 +88,14 @@ func main() {
 	}
 
 	ca.CacheConfiguration()
-	ca.NewCA("Silei", ca.InitializeCommonTables)
+	ca := ca.NewCA("Silei", ca.InitializeCommonTables)
+
+	const Pub = `-----BEGIN PUBLIC KEY-----
+MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEs0Hsfojry7g3TLBzID4JjjIhGJF2GMJ5
+acT38++yWsju1UKRWUxFrfqJXjRYz4yf5dduk6pbPWGOUdfdAOAPJQ==
+-----END PUBLIC KEY-----`
+
+	ca.IssueCertificate([]byte(Pub), "test")
 
 	s.Serve(lis)
 }

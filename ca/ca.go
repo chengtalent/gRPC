@@ -131,7 +131,7 @@ func NewDefaultCertificateSpecWithCommonName(id string, commonName string, pub i
 func CacheConfiguration() {
 	caOrganization = "pki.ca.subject.organization"
 	caCountry = "pki.ca.subject.country"
-	rootPath = "/home/silei/Dianrong/ethereum"
+	rootPath = "/tmp/ethereum"
 	caDir = "CA"
 }
 
@@ -274,6 +274,29 @@ func NewCA(name string, initTables TableInitializer) *CA {
 	ca.cert = cert
 
 	return ca
+}
+
+func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error) {
+	raw, err := ca.readCACertificate(name)
+	if err != nil {
+		block, _ := pem.Decode(in)
+		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if(err != nil) {
+			caLogger.Panic(err)
+		}
+
+		pubkey := pub.(ecdsa.PublicKey)
+
+
+		raw = ca.createCACertificate(name, &(pubkey))
+	}
+
+	cert, err := x509.ParseCertificate(raw)
+	if err != nil {
+		caLogger.Panic(err)
+	}
+
+	return cert, err
 }
 
 // Stop Close closes down the CA.
