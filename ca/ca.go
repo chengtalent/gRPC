@@ -69,14 +69,6 @@ type CertificateSpec struct {
 	ext          *[]pkix.Extension
 }
 
-// AffiliationGroup struct
-type AffiliationGroup struct {
-	name     string
-	parentID int64
-	parent   *AffiliationGroup
-	preKey   []byte
-}
-
 var (
 	mutex          = &sync.RWMutex{}
 	caOrganization string
@@ -217,9 +209,6 @@ func InitializeCommonTables(db *sql.DB) error {
 	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS Users (row INTEGER PRIMARY KEY, id VARCHAR(64), enrollmentId VARCHAR(100), role INTEGER, metadata VARCHAR(256), token BLOB, state INTEGER, key BLOB)"); err != nil {
 		return err
 	}
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS AffiliationGroups (row INTEGER PRIMARY KEY, name VARCHAR(64), parent INTEGER, FOREIGN KEY(parent) REFERENCES AffiliationGroups(row))"); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -297,6 +286,10 @@ func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error
 	}
 
 	return cert, err
+}
+
+func (ca *CA) VerifySignature(c *x509.Certificate) error {
+	return c.CheckSignatureFrom(ca.cert)
 }
 
 // Stop Close closes down the CA.
@@ -539,23 +532,4 @@ func (ca *CA) readCertificateByHash(hash []byte) ([]byte, error) {
 	err := row.Scan(&raw)
 
 	return raw, err
-}
-
-func (ca *CA) isValidAffiliation(affiliation string) (bool, error) {
-	caLogger.Debug("Validating affiliation: " + affiliation)
-
-	mutex.RLock()
-	defer mutex.RUnlock()
-
-	var count int
-	var err error
-	err = ca.db.QueryRow("SELECT count(row) FROM AffiliationGroups WHERE name=?", affiliation).Scan(&count)
-	if err != nil {
-		caLogger.Debug("Affiliation <" + affiliation + "> is INVALID.")
-
-		return false, err
-	}
-	caLogger.Debug("Affiliation <" + affiliation + "> is VALID.")
-
-	return count == 1, nil
 }

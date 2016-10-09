@@ -35,45 +35,73 @@ package main
 
 import (
 	"log"
-	"os"
+	"net"
 
+	"github.com/op/go-logging"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	pb "google.golang.org/grpc/examples/helloworld/helloworld"
+	ca "google.golang.org/grpc/examples/helloworld/ca"
+	"google.golang.org/grpc/examples/helloworld/crypto"
+	pb "google.golang.org/grpc/examples/helloworld/proto"
 )
 
 const (
-	address     = "localhost:50051"
-	defaultName = "world"
+	port = ":50051"
 )
 
+var slogger = logging.MustGetLogger("server")
+
+// server is used to implement helloworld.GreeterServer.
+type server struct{}
+
+// SayHello implements helloworld.GreeterServer
+func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+}
+
+type whitelistServer struct{}
+
+func (s *whitelistServer) GetWhitelist(ctx context.Context, in *pb.NoParam) (*pb.IPList, error) {
+	res := &pb.IPList{}
+	res.Ip = make([]string, 2)
+	res.Ip[0] = "127.0.0.1"
+	res.Ip[1] = "192.168.0.1"
+
+	return res, nil
+}
+
 func main() {
-	// Set up a connection to the server.
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		log.Fatalf("failed to listen: %v", err)
 	}
-	defer conn.Close()
 
-	c := pb.NewGreeterClient(conn)
+	s := grpc.NewServer()
+	pb.RegisterGreeterServer(s, &server{})
+	pb.RegisterWhitelistServer(s, &whitelistServer{})
 
-	// Contact the server and print out its response.
-	name := defaultName
-	if len(os.Args) > 1 {
-		name = os.Args[1]
+	//////////////////////////////////////////////////
+
+	// Init the crypto layer
+	if err := crypto.Init(); err != nil {
+		slogger.Panicf("Failed initializing the crypto layer [%s]", err)
 	}
-	r, err := c.SayHello(context.Background(), &pb.HelloRequest{Name: name})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
-	log.Printf("Greeting: %s", r.Message)
 
-	/////////////////////////////////////////////////////
+	ca.CacheConfiguration()
+	ca := ca.NewCA("Silei", ca.InitializeCommonTables)
 
-	c2 := pb.NewWhitelistClient(conn)
-	r2, err2 := c2.GetWhitelist(context.Background(), &pb.NoParam{})
-	if err2 != nil {
-		log.Fatalf("could not GetWhitelist: %v", err2)
-	}
-	log.Printf("GetWhitelist: %s", r2.Ip)
+//	const Pub = `-----BEGIN PUBLIC KEY-----
+//MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEs0Hsfojry7g3TLBzID4JjjIhGJF2GMJ5
+//acT38++yWsju1UKRWUxFrfqJXjRYz4yf5dduk6pbPWGOUdfdAOAPJQ==
+//-----END PUBLIC KEY-----`
+
+
+	const Pub = `-----BEGIN ECDSA PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
+1j7hyO4lqc+b1rUwsCW9ED5P94ysslg6e75MT6UCKYLqRYlIr3bOqfT51w==
+-----END ECDSA PUBLIC KEY-----`
+
+	ca.IssueCertificate([]byte(Pub), "test")
+
+	s.Serve(lis)
 }
