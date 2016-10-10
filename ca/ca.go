@@ -288,8 +288,8 @@ func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error
 	return cert, err
 }
 
-func (ca *CA) VerifySignature(c *x509.Certificate) error {
-	return c.CheckSignatureFrom(ca.cert)
+func (ca *CA) GetCACertificate() (*x509.Certificate, error) {
+	return ca.cert
 }
 
 // Stop Close closes down the CA.
