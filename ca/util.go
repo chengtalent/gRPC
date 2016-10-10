@@ -21,13 +21,3 @@ func BuildCertificateFromBytes(cooked []byte) *x509.Certificate {
 	}
 	return cert
 }
-
-//func CreateKeyPairs(ca *CA, name string) (*ecdsa.PrivateKey, error) {
-//	// read or create signing key pair
-//	priv, err := ca.readCAPrivateKey(name)
-//	if err != nil {
-//		priv = ca.createCAKeyPair(name)
-//	}
-//
-//	return priv, nil
-//}
