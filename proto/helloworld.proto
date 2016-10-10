@@ -1,4 +1,3 @@
-
 syntax = "proto3";
 
 option java_multiple_files = true;
@@ -34,5 +33,17 @@ message IPList {
 }
 
 service CA {
-
+    rpc IssueCertificate (CertificateRequest) returns (CertificateReply) {}
 }
+
+message CertificateRequest {
+    bytes in = 1;
+    string name = 2;
+}
+
+message CertificateReply {
+    bytes in = 1;
+}
+
+
+
