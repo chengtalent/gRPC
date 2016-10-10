@@ -90,4 +90,10 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
 		log.Fatalf("could not IssueCertificate: %v", err3)
 	}
 	log.Printf("IssueCertificate: %s", r3.In)
+
+	r3, err3 = c3.GetCACertificate(context.Background(), &pb.NoParam{})
+	if err3 != nil {
+		log.Fatalf("could not GetCACertificate: %v", err3)
+	}
+	log.Printf("GetCACertificate: %s", r3.In)
 }

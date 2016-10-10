@@ -288,8 +288,16 @@ func (ca *CA) IssueCertificate(in []byte, name string) ([]byte, error) {
 	return cooked, nil
 }
 
-func (ca *CA) GetCACertificate() (*x509.Certificate) {
-	return ca.cert
+func (ca *CA) GetCACertificate() ([]byte) {
+	raw := ca.cert.Raw
+
+	cooked := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: raw,
+		})
+
+	return cooked
 }
 
 // Stop Close closes down the CA.

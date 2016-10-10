@@ -89,6 +89,17 @@ func (s *CAServer)IssueCertificate(ctx context.Context, cr *pb.CertificateReques
 	return &reply, nil
 }
 
+func (s *CAServer)GetCACertificate(ctx context.Context, np *pb.NoParam) (*pb.CertificateReply, error) {
+	if cap == nil {
+		return nil, nil
+	}
+
+	reply := pb.CertificateReply{}
+	reply.In = cap.GetCACertificate()
+
+	return &reply, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

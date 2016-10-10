@@ -34,6 +34,7 @@ message IPList {
 
 service CA {
     rpc IssueCertificate (CertificateRequest) returns (CertificateReply) {}
+    rpc GetCACertificate (NoParam) returns (CertificateReply) {}
 }
 
 message CertificateRequest {
