@@ -100,6 +100,15 @@ func (s *CAServer)GetCACertificate(ctx context.Context, np *pb.NoParam) (*pb.Cer
 	return &reply, nil
 }
 
+func (s *CAServer)VerifySignature(ctx context.Context, certData *pb.CertificateData) (*pb.SignatureValid, error) {
+	valid := pb.SignatureValid{}
+
+	err := ca.VerifySignature(certData.Cert, certData.Root)
+	valid.Valid = err == nil
+
+	return &valid, err
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {

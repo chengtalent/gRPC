@@ -1,7 +1,23 @@
 package ca
 
-import "crypto/x509"
+import (
+	"crypto/x509"
+	"encoding/pem"
+)
 
-func VerifySignature(c *x509.Certificate, caCert *x509.Certificate) error {
-	return c.CheckSignatureFrom(caCert)
+func VerifySignature(cert []byte, caCert []byte) error {
+	c := BuildCertificateFromBytes(cert)
+	caC := BuildCertificateFromBytes(caCert)
+
+	return c.CheckSignatureFrom(caC)
+}
+
+func BuildCertificateFromBytes(cooked []byte) *x509.Certificate {
+	block, _ := pem.Decode(cooked)
+	cert, err := x509.ParseCertificate(block.Bytes)
+
+	if err != nil {
+		caLogger.Panic(err)
+	}
+	return cert
 }
