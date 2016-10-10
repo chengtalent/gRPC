@@ -267,6 +267,7 @@ func NewCA(name string, initTables TableInitializer) *CA {
 
 func (ca *CA) IssueCertificate(in []byte, name string) ([]byte, error) {
 	raw, err := ca.readCACertificate(name)
+
 	if err != nil {
 		block, _ := pem.Decode(in)
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -275,8 +276,6 @@ func (ca *CA) IssueCertificate(in []byte, name string) ([]byte, error) {
 		}
 
 		pubkey := pub.(*ecdsa.PublicKey)
-
-
 		raw = ca.createCACertificate(name, (pubkey))
 	}
 
@@ -286,7 +285,7 @@ func (ca *CA) IssueCertificate(in []byte, name string) ([]byte, error) {
 			Bytes: raw,
 		})
 
-	return cooked, err
+	return cooked, nil
 }
 
 func (ca *CA) GetCACertificate() (*x509.Certificate) {
@@ -376,7 +375,13 @@ func (ca *CA) createCACertificate(name string, pub *ecdsa.PublicKey) []byte {
 func (ca *CA) readCACertificate(name string) ([]byte, error) {
 	caLogger.Debug("Reading CA certificate.")
 
-	cooked, err := ioutil.ReadFile(ca.path + "/" + name + ".cert")
+	path := ca.path + "/" + name + ".cert"
+
+	if _, err := os.Stat(path); err != nil {
+		return nil, err
+	}
+
+	cooked, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
