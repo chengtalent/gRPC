@@ -50,6 +50,7 @@ const (
 )
 
 var slogger = logging.MustGetLogger("server")
+var cap *ca.CA
 
 // server is used to implement helloworld.GreeterServer.
 type server struct{}
@@ -70,6 +71,24 @@ func (s *whitelistServer) GetWhitelist(ctx context.Context, in *pb.NoParam) (*pb
 	return res, nil
 }
 
+type CAServer struct{}
+
+func (s *CAServer)IssueCertificate(ctx context.Context, cr *pb.CertificateRequest) (*pb.CertificateReply, error) {
+	if cap == nil {
+		return nil, nil
+	}
+
+	reply := pb.CertificateReply{}
+	if cert, err := cap.IssueCertificate(cr.In, cr.Name); err != nil {
+		slogger.Panicf("Failed IssueCertificate [%s]", err)
+		return nil, err
+	}else {
+		reply.In = cert
+	}
+
+	return &reply, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -79,6 +98,7 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterGreeterServer(s, &server{})
 	pb.RegisterWhitelistServer(s, &whitelistServer{})
+	pb.RegisterCAServer(s, &CAServer{})
 
 	//////////////////////////////////////////////////
 
@@ -88,7 +108,7 @@ func main() {
 	}
 
 	ca.CacheConfiguration()
-	ca := ca.NewCA("Silei", ca.InitializeCommonTables)
+	cap = ca.NewCA("Silei", ca.InitializeCommonTables)
 
 //	const Pub = `-----BEGIN PUBLIC KEY-----
 //MFYwEAYHKoZIzj0CAQYFK4EEAAoDQgAEs0Hsfojry7g3TLBzID4JjjIhGJF2GMJ5
@@ -96,12 +116,12 @@ func main() {
 //-----END PUBLIC KEY-----`
 
 
-	const Pub = `-----BEGIN ECDSA PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
-1j7hyO4lqc+b1rUwsCW9ED5P94ysslg6e75MT6UCKYLqRYlIr3bOqfT51w==
------END ECDSA PUBLIC KEY-----`
-
-	ca.IssueCertificate([]byte(Pub), "test")
+//	const Pub = `-----BEGIN ECDSA PUBLIC KEY-----
+//MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
+//1j7hyO4lqc+b1rUwsCW9ED5P94ysslg6e75MT6UCKYLqRYlIr3bOqfT51w==
+//-----END ECDSA PUBLIC KEY-----`
+//
+//	cap.IssueCertificate([]byte(Pub), "test")
 
 	s.Serve(lis)
 }

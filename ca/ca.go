@@ -265,7 +265,7 @@ func NewCA(name string, initTables TableInitializer) *CA {
 	return ca
 }
 
-func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error) {
+func (ca *CA) IssueCertificate(in []byte, name string) ([]byte, error) {
 	raw, err := ca.readCACertificate(name)
 	if err != nil {
 		block, _ := pem.Decode(in)
@@ -280,15 +280,16 @@ func (ca *CA) IssueCertificate(in []byte, name string) (*x509.Certificate, error
 		raw = ca.createCACertificate(name, (pubkey))
 	}
 
-	cert, err := x509.ParseCertificate(raw)
-	if err != nil {
-		caLogger.Panic(err)
-	}
+	cooked := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: raw,
+		})
 
-	return cert, err
+	return cooked, err
 }
 
-func (ca *CA) GetCACertificate() (*x509.Certificate, error) {
+func (ca *CA) GetCACertificate() (*x509.Certificate) {
 	return ca.cert
 }
 

@@ -76,4 +76,18 @@ func main() {
 		log.Fatalf("could not GetWhitelist: %v", err2)
 	}
 	log.Printf("GetWhitelist: %s", r2.Ip)
+
+	/////////////////////////////////////////////////////
+
+	const Pub = `-----BEGIN ECDSA PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzqR158ptAz23PsGiKeAAQfdgaUP3
+1j7hyO4lqc+b1rUwsCW9ED5P94ysslg6e75MT6UCKYLqRYlIr3bOqfT51w==
+-----END ECDSA PUBLIC KEY-----`
+
+	c3 := pb.NewCAClient(conn)
+	r3, err3 := c3.IssueCertificate(context.Background(), &pb.CertificateRequest{In:[]byte(Pub), Name:"clientCertReq"})
+	if err3 != nil {
+		log.Fatalf("could not IssueCertificate: %v", err3)
+	}
+	log.Printf("IssueCertificate: %s", r3.In)
 }
