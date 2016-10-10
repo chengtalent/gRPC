@@ -52,13 +52,6 @@ const (
 var slogger = logging.MustGetLogger("server")
 var cap *ca.CA
 
-// server is used to implement helloworld.GreeterServer.
-type server struct{}
-
-// SayHello implements helloworld.GreeterServer
-func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
-}
 
 type whitelistServer struct{}
 
@@ -116,7 +109,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+
 	pb.RegisterWhitelistServer(s, &whitelistServer{})
 	pb.RegisterCAServer(s, &CAServer{})
 
