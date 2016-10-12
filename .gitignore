@@ -1,3 +1,6 @@
 .idea/*
 server/server
 client/client
+
+mynet/client/client
+mynet/server/server
