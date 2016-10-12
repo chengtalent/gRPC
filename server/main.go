@@ -7,7 +7,7 @@ import (
 	"github.com/op/go-logging"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	ca "google.golang.org/grpc/examples/helloworld/ca"
+	ca "google.golang.org/grpc/examples/helloworld/crypto/ca"
 	"google.golang.org/grpc/examples/helloworld/crypto"
 	pb "google.golang.org/grpc/examples/helloworld/proto"
 )
